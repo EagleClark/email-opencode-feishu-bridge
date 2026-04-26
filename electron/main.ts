@@ -91,6 +91,8 @@ app.whenReady().then(() => {
     title: 'Email-OpenCode-Feishu-Bridge',
     width: 1000,
     height: 700,
+    minWidth: 900,
+    minHeight: 600,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,

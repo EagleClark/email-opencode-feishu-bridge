@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { ActionIcon, AppShell, Group, NavLink, Title, Tooltip, useMantineColorScheme, Stack } from '@mantine/core';
+import { ActionIcon, AppShell, Button, Divider, Group, NavLink, Title, Tooltip, useMantineColorScheme, Stack } from '@mantine/core';
 import { IconSun, IconMoon, IconDeviceDesktop, IconSettings, IconMailCheck, IconPlugConnected } from '@tabler/icons-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
+import { MonitorStatusBadge } from './MonitorStatusBadge';
 
 const navItems = [
   { label: '设置', path: '/', icon: IconSettings },
@@ -11,6 +13,7 @@ const navItems = [
 export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { state, startMonitor, stopMonitor } = useApp();
   const { colorScheme, setColorScheme, clearColorScheme } = useMantineColorScheme();
   const [autoMode, setAutoMode] = useState(() => !localStorage.getItem('mantine-color-scheme-value'));
 
@@ -31,7 +34,7 @@ export function AppLayout() {
 
   return (
     <AppShell
-      header={{ height: 50 }}
+      header={{ height: 56 }}
       navbar={{ width: 200, breakpoint: 0 }}
       padding="md"
     >
@@ -41,11 +44,33 @@ export function AppLayout() {
             <IconPlugConnected size={22} />
             <Title order={4}>Email-OpenCode-飞书桥接器</Title>
           </Group>
-          <Tooltip label={themeLabel}>
-            <ActionIcon variant="light" onClick={toggleTheme} size="lg">
-              {themeIcon}
-            </ActionIcon>
-          </Tooltip>
+          <Group gap="sm">
+            <MonitorStatusBadge status={state.monitorStatus} />
+            <Button
+              size="xs"
+              variant="light"
+              color="green"
+              onClick={startMonitor}
+              disabled={!state.config || state.monitorStatus.running}
+            >
+              开始监控
+            </Button>
+            <Button
+              size="xs"
+              variant="light"
+              color="red"
+              onClick={stopMonitor}
+              disabled={!state.monitorStatus.running}
+            >
+              停止
+            </Button>
+            <Divider orientation="vertical" />
+            <Tooltip label={themeLabel}>
+              <ActionIcon variant="light" onClick={toggleTheme} size="lg">
+                {themeIcon}
+              </ActionIcon>
+            </Tooltip>
+          </Group>
         </Group>
       </AppShell.Header>
       <AppShell.Navbar p="sm">
