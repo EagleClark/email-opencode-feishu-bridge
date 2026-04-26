@@ -5,7 +5,6 @@ import { sendToFeishuWebhook } from './feishu-webhook';
 export async function sendEmailToOpenCode(
   config: EmailConfig,
   email: StoredEmail,
-  onProcessed?: () => void,
 ): Promise<void> {
   if (!config.openCodeHost || !config.openCodePort) return;
 
@@ -26,12 +25,30 @@ export async function sendEmailToOpenCode(
       email.textPreview,
     ].join('\n');
 
-    const result = await client.session.prompt({
+    // Start prompt but don't await yet — let OpenCode process in background
+    const promptPromise = client.session.prompt({
       path: { id: session.data.id },
       body: {
         parts: [{ type: 'text' as const, text: content }],
       },
     });
+
+    // Send processing notification to Feishu immediately
+    if (config.feishuWebhookUrl) {
+      await sendToFeishuWebhook(
+        config.feishuWebhookUrl,
+        `正在处理: ${email.subject}`,
+        [
+          `以下邮件已发送到 OpenCode，正在处理中:`,
+          '',
+          `发件人: ${email.fromName} <${email.fromAddress}>`,
+          `主题: ${email.subject}`,
+        ].join('\n'),
+      );
+    }
+
+    // Wait for OpenCode response
+    const result = await promptPromise;
 
     // Extract text from response parts
     const responseText = result.data?.parts
@@ -40,7 +57,7 @@ export async function sendEmailToOpenCode(
       .join('\n')
       .trim();
 
-    // Send response to Feishu webhook if configured
+    // Send result to Feishu webhook if configured
     if (responseText && config.feishuWebhookUrl) {
       const preview = responseText.length > 4000
         ? responseText.slice(0, 4000) + '\n\n...（内容过长已截断）'
@@ -52,8 +69,6 @@ export async function sendEmailToOpenCode(
         preview,
       );
     }
-
-    onProcessed?.();
   } catch (err) {
     console.error('[OpenCode] Failed to process email:', err);
   }

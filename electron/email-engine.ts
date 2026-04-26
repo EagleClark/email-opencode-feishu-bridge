@@ -124,7 +124,8 @@ export class EmailEngine {
           this.cacheEmail(stored);
           this.win.webContents.send('email:new', stored);
           if (!this.ackedUids.has(stored.uid)) {
-            sendEmailToOpenCode(this.config, stored, () => this.markAcked(stored.uid));
+            this.markAcked(stored.uid);
+            sendEmailToOpenCode(this.config, stored);
           }
         } catch { /* skip individual fetch errors */ }
       }
