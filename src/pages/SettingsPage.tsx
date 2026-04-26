@@ -4,7 +4,7 @@ import { ConfigForm } from '../components/ConfigForm';
 import { MonitorStatusBadge } from '../components/MonitorStatusBadge';
 
 export function SettingsPage() {
-  const { state, saveConfig, validateConfig, startMonitor, stopMonitor } = useApp();
+  const { state, saveConfig, validateConfig, testOpenCode, startMonitor, stopMonitor } = useApp();
 
   return (
     <Stack gap="lg">
@@ -15,6 +15,7 @@ export function SettingsPage() {
           initialConfig={state.config}
           onSave={saveConfig}
           onValidate={validateConfig}
+          onTestOpenCode={testOpenCode}
         />
       </Paper>
 

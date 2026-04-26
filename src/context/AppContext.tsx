@@ -30,6 +30,7 @@ interface AppContextValue {
   state: AppState;
   saveConfig: (config: EmailConfig) => Promise<void>;
   validateConfig: (config: EmailConfig) => Promise<{ valid: boolean; error?: string }>;
+  testOpenCode: (host: string, port: number) => Promise<{ valid: boolean; error?: string }>;
   refreshEmails: () => Promise<void>;
   markAcked: (uid: number) => Promise<void>;
   startMonitor: () => Promise<void>;
@@ -157,6 +158,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return getAPI().validateConfig(config);
   }, []);
 
+  const testOpenCode = useCallback(async (host: string, port: number) => {
+    return getAPI().testOpenCode(host, port);
+  }, []);
+
   const refreshEmails = useCallback(async () => {
     const emails = await getAPI().getEmails();
     dispatch({ type: 'SET_EMAILS', payload: emails });
@@ -189,6 +194,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       state,
       saveConfig,
       validateConfig,
+      testOpenCode,
       refreshEmails,
       markAcked,
       startMonitor,

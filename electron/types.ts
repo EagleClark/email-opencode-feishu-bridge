@@ -6,6 +6,8 @@ export interface EmailConfig {
   useTls: boolean;
   monitoredSenders: string[];
   senderMatchType: 'exact' | 'domain';
+  openCodeHost?: string;
+  openCodePort?: number;
 }
 
 export interface StoredEmail {

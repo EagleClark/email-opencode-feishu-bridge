@@ -2,6 +2,7 @@ import type { IpcMain, BrowserWindow } from 'electron';
 import { ImapFlow } from 'imapflow';
 import { ConfigStore } from './config-store';
 import { EmailEngine } from './email-engine';
+import { testOpenCodeConnection } from './opencode-client';
 import type { EmailConfig, ValidationResult } from './types';
 
 interface EngineRef {
@@ -69,6 +70,10 @@ export function registerIpcHandlers(
 
   ipcMain.handle('monitor:stop', () => {
     engineRef.getEngine()?.stop();
+  });
+
+  ipcMain.handle('opencode:test', async (_event, host: string, port: number) => {
+    return testOpenCodeConnection(host, port);
   });
 
   // Push monitor:status updates to renderer from engine

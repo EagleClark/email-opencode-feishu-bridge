@@ -3,6 +3,7 @@ import { simpleParser } from 'mailparser';
 import type { BrowserWindow } from 'electron';
 import type { EmailConfig, StoredEmail, MonitorStatus } from './types';
 import { ConfigStore } from './config-store';
+import { sendEmailToOpenCode } from './opencode-client';
 
 export class EmailEngine {
   private client: ImapFlow;
@@ -122,6 +123,7 @@ export class EmailEngine {
 
           this.cacheEmail(stored);
           this.win.webContents.send('email:new', stored);
+          sendEmailToOpenCode(this.config, stored);
         } catch { /* skip individual fetch errors */ }
       }
 

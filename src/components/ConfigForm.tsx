@@ -18,6 +18,7 @@ interface Props {
   initialConfig: EmailConfig | null;
   onSave: (config: EmailConfig) => Promise<void>;
   onValidate: (config: EmailConfig) => Promise<{ valid: boolean; error?: string }>;
+  onTestOpenCode?: (host: string, port: number) => Promise<{ valid: boolean; error?: string }>;
 }
 
 const defaultConfig: EmailConfig = {
@@ -28,17 +29,21 @@ const defaultConfig: EmailConfig = {
   useTls: true,
   monitoredSenders: [],
   senderMatchType: 'exact',
+  openCodeHost: '127.0.0.1',
+  openCodePort: 4096,
 };
 
-export function ConfigForm({ initialConfig, onSave, onValidate }: Props) {
+export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }: Props) {
   const [config, setConfig] = useState<EmailConfig>(initialConfig ?? defaultConfig);
   const [testResult, setTestResult] = useState<{ valid: boolean; error?: string } | null>(null);
   const [testing, setTesting] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [openCodeTestResult, setOpenCodeTestResult] = useState<{ valid: boolean; error?: string } | null>(null);
+  const [testingOpenCode, setTestingOpenCode] = useState(false);
 
   useEffect(() => {
     if (initialConfig) {
-      setConfig(initialConfig);
+      setConfig({ ...defaultConfig, ...initialConfig });
     }
   }, [initialConfig]);
 
@@ -52,6 +57,15 @@ export function ConfigForm({ initialConfig, onSave, onValidate }: Props) {
     const result = await onValidate(config);
     setTestResult(result);
     setTesting(false);
+  };
+
+  const handleTestOpenCode = async () => {
+    if (!onTestOpenCode) return;
+    setTestingOpenCode(true);
+    setOpenCodeTestResult(null);
+    const result = await onTestOpenCode(config.openCodeHost || '127.0.0.1', config.openCodePort || 4096);
+    setOpenCodeTestResult(result);
+    setTestingOpenCode(false);
   };
 
   const handleSave = async () => {
@@ -128,9 +142,47 @@ export function ConfigForm({ initialConfig, onSave, onValidate }: Props) {
 
       <Group mt="md">
         <Button onClick={handleTest} loading={testing} variant="light">
-          测试连接
+          测试 IMAP 连接
         </Button>
-        <Button onClick={handleSave} loading={saving}>
+      </Group>
+
+      <Text size="sm" fw={500} mt="xl">OpenCode 设置</Text>
+      <Text size="xs" c="dimmed" mb="xs">收到邮件时自动发送到 OpenCode 执行</Text>
+
+      <Group grow>
+        <TextInput
+          label="OpenCode 地址"
+          placeholder="127.0.0.1"
+          value={config.openCodeHost ?? ''}
+          onChange={e => update('openCodeHost', e.currentTarget.value)}
+        />
+        <NumberInput
+          label="端口"
+          placeholder="4096"
+          value={config.openCodePort ?? 4096}
+          onChange={v => update('openCodePort', Number(v) || 4096)}
+          min={1}
+          max={65535}
+        />
+      </Group>
+
+      {openCodeTestResult && (
+        <Alert
+          color={openCodeTestResult.valid ? 'green' : 'red'}
+          title={openCodeTestResult.valid ? '连接成功' : '连接失败'}
+        >
+          {openCodeTestResult.error || '已成功连接到 OpenCode 服务器。'}
+        </Alert>
+      )}
+
+      <Group mt="md">
+        <Button onClick={handleTestOpenCode} loading={testingOpenCode} variant="light">
+          测试 OpenCode 连接
+        </Button>
+      </Group>
+
+      <Group mt="xl">
+        <Button onClick={handleSave} loading={saving} size="md">
           保存
         </Button>
       </Group>

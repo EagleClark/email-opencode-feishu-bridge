@@ -13,6 +13,8 @@ const externalModules = [
   ...nodeBuiltins,
   'imapflow',
   'mailparser',
+  '@opencode-ai/sdk',
+  'cross-spawn',
 ]
 
 export default defineConfig({

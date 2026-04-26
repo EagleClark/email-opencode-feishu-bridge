@@ -6,6 +6,8 @@ export interface EmailConfig {
   useTls: boolean;
   monitoredSenders: string[];
   senderMatchType: 'exact' | 'domain';
+  openCodeHost?: string;
+  openCodePort?: number;
 }
 
 export interface StoredEmail {
@@ -43,6 +45,7 @@ export interface ElectronAPI {
   getMonitorStatus: () => Promise<MonitorStatus>;
   startMonitor: () => Promise<void>;
   stopMonitor: () => Promise<void>;
+  testOpenCode: (host: string, port: number) => Promise<ValidationResult>;
   onNewEmail: (cb: (email: StoredEmail) => void) => () => void;
   onMonitorError: (cb: (error: string) => void) => () => void;
 }

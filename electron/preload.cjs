@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getMonitorStatus: () => ipcRenderer.invoke('monitor:status'),
   startMonitor: () => ipcRenderer.invoke('monitor:start'),
   stopMonitor: () => ipcRenderer.invoke('monitor:stop'),
+  testOpenCode: (host, port) => ipcRenderer.invoke('opencode:test', host, port),
 
   onNewEmail: (cb) => {
     const handler = (_event, email) => cb(email);
