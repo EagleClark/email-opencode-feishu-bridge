@@ -45,13 +45,14 @@ export function EmailCard({ email, onAck }: Props) {
         <Button
           size="xs"
           variant="light"
+          color="orange"
           mt="sm"
           onClick={(e) => { e.stopPropagation(); onAck(email.uid); }}
         >
-          标记已读
+          标记已处理
         </Button>
       ) : (
-        <Text size="xs" c="dimmed" mt="sm">✅ 已读</Text>
+        <Text size="xs" c="green" mt="sm">✅ 已发送到 OpenCode</Text>
       )}
     </Card>
   );

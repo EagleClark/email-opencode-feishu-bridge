@@ -1,6 +1,7 @@
 import { createHashRouter, RouterProvider } from 'react-router-dom';
 import { AppLayout } from './components/AppLayout';
 import { EmailPage } from './pages/EmailPage';
+import { LogPage } from './pages/LogPage';
 import { SettingsPage } from './pages/SettingsPage';
 
 const router = createHashRouter([
@@ -10,6 +11,7 @@ const router = createHashRouter([
     children: [
       { index: true, element: <SettingsPage /> },
       { path: 'email', element: <EmailPage /> },
+      { path: 'log', element: <LogPage /> },
     ],
   },
 ]);

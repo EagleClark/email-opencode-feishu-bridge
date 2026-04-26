@@ -32,6 +32,7 @@ const defaultConfig: EmailConfig = {
   openCodeHost: '127.0.0.1',
   openCodePort: 4096,
   feishuWebhookUrl: '',
+  logFilePath: '',
 };
 
 export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }: Props) {
@@ -193,9 +194,35 @@ export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }
         onChange={e => update('feishuWebhookUrl', e.currentTarget.value)}
       />
 
+      <Text size="sm" fw={500} mt="xl">📋 日志设置</Text>
+
+      <Group align="end" gap="sm">
+        <TextInput
+          label="日志文件路径"
+          placeholder="留空则不持久化到文件"
+          value={config.logFilePath ?? ''}
+          onChange={e => update('logFilePath', e.currentTarget.value)}
+          description="设置后运行日志将同时写入此文件，支持 .txt 或 .log 格式"
+          style={{ flex: 1 }}
+        />
+        <Button
+          variant="light"
+          size="sm"
+          onClick={async () => {
+            const api = window.electronAPI;
+            if (api?.selectLogFilePath) {
+              const filePath = await api.selectLogFilePath();
+              if (filePath) update('logFilePath', filePath);
+            }
+          }}
+        >
+          浏览
+        </Button>
+      </Group>
+
       <Group mt="xl">
         <Button onClick={handleSave} loading={saving} size="md">
-          💾 保存
+          保存
         </Button>
       </Group>
     </Stack>

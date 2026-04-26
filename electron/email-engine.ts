@@ -4,6 +4,7 @@ import type { BrowserWindow } from 'electron';
 import type { EmailConfig, StoredEmail, MonitorStatus } from './types';
 import { ConfigStore } from './config-store';
 import { sendEmailToOpenCode } from './opencode-client';
+import { addLog } from './log-manager';
 
 export class EmailEngine {
   private client: ImapFlow;
@@ -16,6 +17,8 @@ export class EmailEngine {
   private lastError: string | null = null;
   private cachedEmails: StoredEmail[] = [];
   private ackedUids: Set<number>;
+  private processedInSession: Set<number>;
+  private processing = false;
   private monitorPromise: Promise<void> | null = null;
   private pollTimer: ReturnType<typeof setInterval> | null = null;
   private maxCached = 200;
@@ -26,6 +29,7 @@ export class EmailEngine {
     this.configStore = configStore;
     this.win = win;
     this.ackedUids = new Set(configStore.loadAcks());
+    this.processedInSession = new Set();
 
     this.client = new ImapFlow({
       host: config.imapHost,
@@ -40,6 +44,7 @@ export class EmailEngine {
     if (this.running) return;
     this.running = true;
     this.backoffDelay = 1000;
+    addLog('info', 'system', '监控已启动');
     this.monitorPromise = this.monitorLoop();
     this.pollTimer = setInterval(() => {
       if (!this.connected) return;
@@ -58,6 +63,7 @@ export class EmailEngine {
     try {
       await this.client.logout();
     } catch { /* ignore */ }
+    addLog('info', 'system', '监控已停止');
     this.pushStatus();
   }
 
@@ -68,6 +74,7 @@ export class EmailEngine {
         this.connected = true;
         this.backoffDelay = 1000;
         this.lastError = null;
+        addLog('info', 'email', `IMAP 已连接 (${this.config.imapHost}:${this.config.imapPort})`);
         this.pushStatus();
 
         const lock = await this.client.getMailboxLock('INBOX');
@@ -83,6 +90,7 @@ export class EmailEngine {
       } catch (err: any) {
         this.connected = false;
         this.lastError = err.message || String(err);
+        addLog('error', 'email', `IMAP 连接断开: ${this.lastError}`);
         this.pushError(this.lastError);
         this.pushStatus();
         if (this.running) {
@@ -94,11 +102,15 @@ export class EmailEngine {
   }
 
   private async handleNewEmails(): Promise<void> {
+    if (this.processing) return;
+    this.processing = true;
     try {
       const uids = await this.client.search({ unseen: true });
       if (!uids || uids.length === 0) return;
 
       for (const uid of uids) {
+        if (this.processedInSession.has(uid as number)) continue;
+
         try {
           const msg = await this.client.fetchOne(uid, { source: true });
           if (!msg) continue;
@@ -107,6 +119,8 @@ export class EmailEngine {
           const fromAddress = parsed.from?.value?.[0]?.address || '';
 
           if (!this.matchesSender(fromAddress)) continue;
+
+          const isAcked = this.ackedUids.has(uid as number);
 
           const stored: StoredEmail = {
             uid: uid as number,
@@ -117,22 +131,24 @@ export class EmailEngine {
             date: parsed.date || new Date(),
             textPreview: (parsed.text || '').slice(0, 200),
             htmlBody: parsed.html || undefined,
-            acked: this.ackedUids.has(uid as number),
+            acked: isAcked,
             receivedAt: new Date(),
           };
 
+          this.processedInSession.add(stored.uid);
           this.cacheEmail(stored);
           this.win.webContents.send('email:new', stored);
-          if (!this.ackedUids.has(stored.uid)) {
-            this.markAcked(stored.uid);
-            sendEmailToOpenCode(this.config, stored);
-          }
+          this.markAcked(stored.uid);
+          addLog('info', 'email', `收到新邮件: "${stored.subject}" (${stored.fromAddress})`);
+          sendEmailToOpenCode(this.config, stored);
         } catch { /* skip individual fetch errors */ }
       }
 
       this.lastChecked = new Date().toISOString();
       this.pushStatus();
-    } catch { /* handle search errors */ }
+    } finally {
+      this.processing = false;
+    }
   }
 
   private matchesSender(fromAddress: string): boolean {

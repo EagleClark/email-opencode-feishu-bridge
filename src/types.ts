@@ -9,6 +9,7 @@ export interface EmailConfig {
   openCodeHost?: string;
   openCodePort?: number;
   feishuWebhookUrl?: string;
+  logFilePath?: string;
 }
 
 export interface StoredEmail {
@@ -37,6 +38,13 @@ export interface ValidationResult {
   error?: string;
 }
 
+export interface LogEntry {
+  timestamp: string;
+  level: 'info' | 'warn' | 'error';
+  category: 'email' | 'opencode' | 'feishu' | 'system';
+  message: string;
+}
+
 export interface ElectronAPI {
   getConfig: () => Promise<EmailConfig | null>;
   saveConfig: (config: EmailConfig) => Promise<void>;
@@ -47,8 +55,12 @@ export interface ElectronAPI {
   startMonitor: () => Promise<void>;
   stopMonitor: () => Promise<void>;
   testOpenCode: (host: string, port: number) => Promise<ValidationResult>;
+  getLogs: () => Promise<LogEntry[]>;
+  clearLogs: () => Promise<void>;
+  selectLogFilePath: () => Promise<string | null>;
   onNewEmail: (cb: (email: StoredEmail) => void) => () => void;
   onMonitorError: (cb: (error: string) => void) => () => void;
+  onNewLog: (cb: (log: LogEntry) => void) => () => void;
 }
 
 declare global {

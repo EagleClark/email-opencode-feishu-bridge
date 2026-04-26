@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { ConfigStore } from './config-store';
 import { EmailEngine } from './email-engine';
 import { registerIpcHandlers } from './ipc-handlers';
+import { initLogManager, setLogFilePath } from './log-manager';
 import type { EmailConfig } from './types';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -89,8 +90,8 @@ app.whenReady().then(() => {
 
   mainWindow = new BrowserWindow({
     title: 'Email-OpenCode-Feishu-Bridge',
-    width: 1000,
-    height: 700,
+    width: 1024,
+    height: 768,
     minWidth: 900,
     minHeight: 600,
     webPreferences: {
@@ -106,6 +107,7 @@ app.whenReady().then(() => {
   }, mainWindow!);
 
   const savedConfig = configStore.loadConfig();
+  initLogManager(mainWindow!, savedConfig?.logFilePath);
   if (savedConfig) {
     createEngine(savedConfig);
   }

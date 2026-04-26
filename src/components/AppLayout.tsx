@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ActionIcon, AppShell, Button, Divider, Group, NavLink, Title, Tooltip, useMantineColorScheme, Stack } from '@mantine/core';
-import { IconSun, IconMoon, IconDeviceDesktop, IconSettings, IconMailCheck, IconPlugConnected } from '@tabler/icons-react';
+import { IconSun, IconMoon, IconDeviceDesktop, IconSettings, IconMailCheck, IconPlugConnected, IconNotebook } from '@tabler/icons-react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { MonitorStatusBadge } from './MonitorStatusBadge';
@@ -8,6 +8,7 @@ import { MonitorStatusBadge } from './MonitorStatusBadge';
 const navItems = [
   { label: '设置', path: '/', icon: IconSettings },
   { label: '邮件状态', path: '/email', icon: IconMailCheck },
+  { label: '运行日志', path: '/log', icon: IconNotebook },
 ];
 
 export function AppLayout() {
@@ -88,7 +89,7 @@ export function AppLayout() {
           ))}
         </Stack>
       </AppShell.Navbar>
-      <AppShell.Main>
+      <AppShell.Main style={{ display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
         <Outlet />
       </AppShell.Main>
     </AppShell>

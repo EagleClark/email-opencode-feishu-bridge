@@ -1,6 +1,7 @@
 import { createOpencodeClient } from '@opencode-ai/sdk';
 import type { EmailConfig, StoredEmail } from './types';
 import { sendToFeishuWebhook } from './feishu-webhook';
+import { addLog } from './log-manager';
 
 export async function sendEmailToOpenCode(
   config: EmailConfig,
@@ -16,6 +17,8 @@ export async function sendEmailToOpenCode(
       body: { title: `邮件: ${email.subject}` },
     });
     if (!session.data) return;
+
+    addLog('info', 'opencode', `正在发送到 OpenCode: "${email.subject}"`);
 
     const content = [
       `发件人: ${email.fromName} <${email.fromAddress}>`,
@@ -49,6 +52,7 @@ export async function sendEmailToOpenCode(
 
     // Wait for OpenCode response
     const result = await promptPromise;
+    addLog('info', 'opencode', `OpenCode 返回结果: "${email.subject}"`);
 
     // Extract text from response parts
     const responseText = result.data?.parts
@@ -70,7 +74,7 @@ export async function sendEmailToOpenCode(
       );
     }
   } catch (err) {
-    console.error('[OpenCode] Failed to process email:', err);
+    addLog('error', 'opencode', `OpenCode 处理失败: "${email.subject}": ${err instanceof Error ? err.message : String(err)}`);
   }
 }
 

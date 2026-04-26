@@ -7,12 +7,13 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
-import type { EmailConfig, StoredEmail, MonitorStatus, ElectronAPI } from '../types';
+import type { EmailConfig, StoredEmail, MonitorStatus, ElectronAPI, LogEntry } from '../types';
 
 interface AppState {
   emails: StoredEmail[];
   config: EmailConfig | null;
   monitorStatus: MonitorStatus;
+  logs: LogEntry[];
   loading: boolean;
   error: string | null;
 }
@@ -23,6 +24,9 @@ type Action =
   | { type: 'MARK_ACKED'; payload: number }
   | { type: 'SET_CONFIG'; payload: EmailConfig | null }
   | { type: 'SET_MONITOR_STATUS'; payload: MonitorStatus }
+  | { type: 'SET_LOGS'; payload: LogEntry[] }
+  | { type: 'ADD_LOG'; payload: LogEntry }
+  | { type: 'LOG_CLEARED' }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_ERROR'; payload: string | null };
 
@@ -36,6 +40,8 @@ interface AppContextValue {
   startMonitor: () => Promise<void>;
   stopMonitor: () => Promise<void>;
   refreshStatus: () => Promise<void>;
+  refreshLogs: () => Promise<void>;
+  clearLogs: () => Promise<void>;
 }
 
 const defaultStatus: MonitorStatus = {
@@ -50,6 +56,7 @@ const initialState: AppState = {
   emails: [],
   config: null,
   monitorStatus: defaultStatus,
+  logs: [],
   loading: true,
   error: null,
 };
@@ -74,6 +81,12 @@ function reducer(state: AppState, action: Action): AppState {
       return { ...state, config: action.payload };
     case 'SET_MONITOR_STATUS':
       return { ...state, monitorStatus: action.payload };
+    case 'SET_LOGS':
+      return { ...state, logs: action.payload };
+    case 'ADD_LOG':
+      return { ...state, logs: [...state.logs, action.payload] };
+    case 'LOG_CLEARED':
+      return { ...state, logs: [] };
     case 'SET_LOADING':
       return { ...state, loading: action.payload };
     case 'SET_ERROR':
@@ -100,14 +113,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function init() {
       try {
-        const [config, emails, status] = await Promise.all([
+        const [config, emails, status, logs] = await Promise.all([
           getAPI().getConfig(),
           getAPI().getEmails(),
           getAPI().getMonitorStatus(),
+          getAPI().getLogs(),
         ]);
         dispatch({ type: 'SET_CONFIG', payload: config });
         dispatch({ type: 'SET_EMAILS', payload: emails });
         dispatch({ type: 'SET_MONITOR_STATUS', payload: status });
+        dispatch({ type: 'SET_LOGS', payload: logs });
       } catch (err: any) {
         dispatch({ type: 'SET_ERROR', payload: err.message });
       } finally {
@@ -130,6 +145,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     cleanups.push(
       api.onMonitorError((error) => {
         dispatch({ type: 'SET_ERROR', payload: error });
+      }),
+    );
+
+    cleanups.push(
+      api.onNewLog((log) => {
+        dispatch({ type: 'ADD_LOG', payload: log });
       }),
     );
 
@@ -189,6 +210,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     dispatch({ type: 'SET_MONITOR_STATUS', payload: status });
   }, []);
 
+  const refreshLogs = useCallback(async () => {
+    const logs = await getAPI().getLogs();
+    dispatch({ type: 'SET_LOGS', payload: logs });
+  }, []);
+
+  const clearLogs = useCallback(async () => {
+    await getAPI().clearLogs();
+    dispatch({ type: 'LOG_CLEARED' });
+  }, []);
+
   return (
     <AppContext.Provider value={{
       state,
@@ -200,6 +231,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       startMonitor,
       stopMonitor,
       refreshStatus,
+      refreshLogs,
+      clearLogs,
     }}>
       {children}
     </AppContext.Provider>

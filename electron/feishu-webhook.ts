@@ -1,3 +1,5 @@
+import { addLog } from './log-manager';
+
 export async function sendToFeishuWebhook(
   webhookUrl: string,
   title: string,
@@ -15,6 +17,8 @@ export async function sendToFeishuWebhook(
     },
   });
 
+  addLog('info', 'feishu', `正在发送飞书通知: "${title}"`);
+
   const res = await fetch(webhookUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -23,6 +27,10 @@ export async function sendToFeishuWebhook(
 
   const data = await res.json();
   if (data.code !== 0) {
-    throw new Error(`Feishu webhook error: ${data.msg || JSON.stringify(data)}`);
+    const errMsg = data.msg || JSON.stringify(data);
+    addLog('error', 'feishu', `飞书 Webhook 发送失败: "${title}": ${errMsg}`);
+    throw new Error(`Feishu webhook error: ${errMsg}`);
   }
+
+  addLog('info', 'feishu', `飞书通知已发送: "${title}"`);
 }

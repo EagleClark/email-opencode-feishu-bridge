@@ -11,6 +11,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   stopMonitor: () => ipcRenderer.invoke('monitor:stop'),
   testOpenCode: (host, port) => ipcRenderer.invoke('opencode:test', host, port),
 
+  getLogs: () => ipcRenderer.invoke('log:list'),
+  clearLogs: () => ipcRenderer.invoke('log:clear'),
+  selectLogFilePath: () => ipcRenderer.invoke('dialog:save-log'),
+
   onNewEmail: (cb) => {
     const handler = (_event, email) => cb(email);
     ipcRenderer.on('email:new', handler);
@@ -20,5 +24,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     const handler = (_event, error) => cb(error);
     ipcRenderer.on('monitor:error', handler);
     return () => ipcRenderer.removeListener('monitor:error', handler);
+  },
+  onNewLog: (cb) => {
+    const handler = (_event, log) => cb(log);
+    ipcRenderer.on('log:new', handler);
+    return () => ipcRenderer.removeListener('log:new', handler);
   },
 });

@@ -1,8 +1,10 @@
 import type { IpcMain, BrowserWindow } from 'electron';
+import { dialog } from 'electron';
 import { ImapFlow } from 'imapflow';
 import { ConfigStore } from './config-store';
 import { EmailEngine } from './email-engine';
 import { testOpenCodeConnection } from './opencode-client';
+import { getLogs, clearLogs, setLogFilePath } from './log-manager';
 import type { EmailConfig, ValidationResult } from './types';
 
 interface EngineRef {
@@ -22,6 +24,7 @@ export function registerIpcHandlers(
 
   ipcMain.handle('config:save', (_event, config: EmailConfig) => {
     configStore.saveConfig(config);
+    setLogFilePath(config.logFilePath ?? null);
     engineRef.createEngine(config);
   });
 
@@ -74,6 +77,26 @@ export function registerIpcHandlers(
 
   ipcMain.handle('opencode:test', async (_event, host: string, port: number) => {
     return testOpenCodeConnection(host, port);
+  });
+
+  ipcMain.handle('log:list', () => {
+    return getLogs();
+  });
+
+  ipcMain.handle('log:clear', () => {
+    clearLogs();
+  });
+
+  ipcMain.handle('dialog:save-log', async () => {
+    const result = await dialog.showSaveDialog(win, {
+      title: '选择日志文件保存路径',
+      defaultPath: 'email-opencode-feishu-bridge.log',
+      filters: [
+        { name: '日志文件', extensions: ['log', 'txt'] },
+        { name: '所有文件', extensions: ['*'] },
+      ],
+    });
+    return result.canceled ? null : result.filePath;
   });
 
   // Push monitor:status updates to renderer from engine

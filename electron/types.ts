@@ -9,6 +9,7 @@ export interface EmailConfig {
   openCodeHost?: string;
   openCodePort?: number;
   feishuWebhookUrl?: string;
+  logFilePath?: string;
 }
 
 export interface StoredEmail {
