@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm build *)",
+      "Bash(npx tsc *)",
+      "Bash(cmd.exe /c \"type \\\\\"D:\\\\Code\\\\email-opencode-feishu-bridge\\\\node_modules\\\\.pnpm\\\\app-builder-lib@26.8.1_dmg-builder@26.8.1_electron-builder-squirrel-windows@26.8.1__electron-_k4fgmpwgqe5lj5rytc24uhhlau\\\\node_modules\\\\app-builder-lib\\\\templates\\\\nsis\\\\include\\\\allowOnlyOneInstallerInstance.nsh\\\\\"\")",
+      "Bash(reg query *)",
+      "Bash(powershell *)",
+      "Bash(pnpm store *)",
+      "Bash(rm -rf node_modules pnpm-lock.yaml)",
+      "Bash(pnpm install *)"
+    ]
+  }
+}
