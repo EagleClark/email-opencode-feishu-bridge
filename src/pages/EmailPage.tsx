@@ -11,7 +11,7 @@ export function EmailPage() {
       <Group mb="md" justify="space-between">
         <MonitorStatusBadge status={state.monitorStatus} />
         <Button size="xs" variant="light" onClick={refreshEmails}>
-          刷新
+          🔄 刷新
         </Button>
       </Group>
 

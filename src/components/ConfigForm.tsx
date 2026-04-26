@@ -77,6 +77,7 @@ export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }
 
   return (
     <Stack gap="md">
+      <Text size="sm" fw={500} mt="md">📧 IMAP 设置</Text>
       <TextInput
         label="IMAP 服务器"
         placeholder="imap.example.com"
@@ -116,7 +117,7 @@ export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }
         required
       />
 
-      <Text size="sm" fw={500} mt="md">监控发件人</Text>
+      <Text size="sm" fw={500} mt="md">👁️ 监控发件人</Text>
       <TagsInput
         placeholder="输入邮箱地址后按回车"
         value={config.monitoredSenders}
@@ -135,7 +136,7 @@ export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }
       {testResult && (
         <Alert
           color={testResult.valid ? 'green' : 'red'}
-          title={testResult.valid ? '连接成功' : '连接失败'}
+          title={testResult.valid ? '✅ 连接成功' : '❌ 连接失败'}
         >
           {testResult.error || '已成功连接到 IMAP 服务器。'}
         </Alert>
@@ -143,11 +144,11 @@ export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }
 
       <Group mt="md">
         <Button onClick={handleTest} loading={testing} variant="light">
-          测试 IMAP 连接
+          🔌 测试 IMAP 连接
         </Button>
       </Group>
 
-      <Text size="sm" fw={500} mt="xl">OpenCode 设置</Text>
+      <Text size="sm" fw={500} mt="xl">🧠 OpenCode 设置</Text>
       <Text size="xs" c="dimmed" mb="xs">收到邮件时自动发送到 OpenCode 执行</Text>
 
       <Group grow>
@@ -170,7 +171,7 @@ export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }
       {openCodeTestResult && (
         <Alert
           color={openCodeTestResult.valid ? 'green' : 'red'}
-          title={openCodeTestResult.valid ? '连接成功' : '连接失败'}
+          title={openCodeTestResult.valid ? '✅ 连接成功' : '❌ 连接失败'}
         >
           {openCodeTestResult.error || '已成功连接到 OpenCode 服务器。'}
         </Alert>
@@ -178,11 +179,11 @@ export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }
 
       <Group mt="md">
         <Button onClick={handleTestOpenCode} loading={testingOpenCode} variant="light">
-          测试 OpenCode 连接
+          🧪 测试 OpenCode 连接
         </Button>
       </Group>
 
-      <Text size="sm" fw={500} mt="xl">飞书 Webhook 设置</Text>
+      <Text size="sm" fw={500} mt="xl">📡 飞书 Webhook 设置</Text>
       <Text size="xs" c="dimmed" mb="xs">OpenCode 返回的结果将通过 Webhook 发送到飞书</Text>
 
       <TextInput
@@ -194,7 +195,7 @@ export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }
 
       <Group mt="xl">
         <Button onClick={handleSave} loading={saving} size="md">
-          保存
+          💾 保存
         </Button>
       </Group>
     </Stack>

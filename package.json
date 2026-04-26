@@ -1,7 +1,7 @@
 {
-  "name": "vite-project",
+  "name": "email-opencode-feishu-bridge",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {

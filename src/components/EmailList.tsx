@@ -20,7 +20,7 @@ export function EmailList({ emails, loading, error, onAck }: Props) {
 
   if (error) {
     return (
-      <Alert title="错误" color="red">
+      <Alert title="❌ 错误" color="red">
         {error}
       </Alert>
     );
@@ -29,7 +29,7 @@ export function EmailList({ emails, loading, error, onAck }: Props) {
   if (emails.length === 0) {
     return (
       <Center h={200}>
-        <Text c="dimmed">暂无来自监控发件人的邮件</Text>
+        <Text c="dimmed">📭 暂无来自监控发件人的邮件</Text>
       </Center>
     );
   }

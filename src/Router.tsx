@@ -8,8 +8,8 @@ const router = createHashRouter([
     path: '/',
     element: <AppLayout />,
     children: [
-      { index: true, element: <EmailPage /> },
-      { path: 'settings', element: <SettingsPage /> },
+      { index: true, element: <SettingsPage /> },
+      { path: 'email', element: <EmailPage /> },
     ],
   },
 ]);
