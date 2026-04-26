@@ -31,6 +31,7 @@ const defaultConfig: EmailConfig = {
   senderMatchType: 'exact',
   openCodeHost: '127.0.0.1',
   openCodePort: 4096,
+  feishuWebhookUrl: '',
 };
 
 export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }: Props) {
@@ -180,6 +181,16 @@ export function ConfigForm({ initialConfig, onSave, onValidate, onTestOpenCode }
           测试 OpenCode 连接
         </Button>
       </Group>
+
+      <Text size="sm" fw={500} mt="xl">飞书 Webhook 设置</Text>
+      <Text size="xs" c="dimmed" mb="xs">OpenCode 返回的结果将通过 Webhook 发送到飞书</Text>
+
+      <TextInput
+        label="Webhook 地址"
+        placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/..."
+        value={config.feishuWebhookUrl ?? ''}
+        onChange={e => update('feishuWebhookUrl', e.currentTarget.value)}
+      />
 
       <Group mt="xl">
         <Button onClick={handleSave} loading={saving} size="md">

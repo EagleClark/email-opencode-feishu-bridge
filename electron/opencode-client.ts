@@ -1,9 +1,11 @@
 import { createOpencodeClient } from '@opencode-ai/sdk';
 import type { EmailConfig, StoredEmail } from './types';
+import { sendToFeishuWebhook } from './feishu-webhook';
 
 export async function sendEmailToOpenCode(
   config: EmailConfig,
   email: StoredEmail,
+  onProcessed?: () => void,
 ): Promise<void> {
   if (!config.openCodeHost || !config.openCodePort) return;
 
@@ -24,14 +26,36 @@ export async function sendEmailToOpenCode(
       email.textPreview,
     ].join('\n');
 
-    await client.session.promptAsync({
+    const result = await client.session.prompt({
       path: { id: session.data.id },
       body: {
-        parts: [{ type: 'text', text: content }],
+        parts: [{ type: 'text' as const, text: content }],
       },
     });
+
+    // Extract text from response parts
+    const responseText = result.data?.parts
+      ?.filter((p: any): p is { type: 'text'; text: string } => p.type === 'text')
+      .map(p => p.text)
+      .join('\n')
+      .trim();
+
+    // Send response to Feishu webhook if configured
+    if (responseText && config.feishuWebhookUrl) {
+      const preview = responseText.length > 4000
+        ? responseText.slice(0, 4000) + '\n\n...（内容过长已截断）'
+        : responseText;
+
+      await sendToFeishuWebhook(
+        config.feishuWebhookUrl,
+        `OpenCode 回复: ${email.subject}`,
+        preview,
+      );
+    }
+
+    onProcessed?.();
   } catch (err) {
-    console.error('[OpenCode] Failed to send email:', err);
+    console.error('[OpenCode] Failed to process email:', err);
   }
 }
 

@@ -16,7 +16,8 @@
       "WebSearch",
       "WebFetch(domain:deepwiki.com)",
       "WebFetch(domain:github.com)",
-      "Bash(pnpm view *)"
+      "Bash(pnpm view *)",
+      "WebFetch(domain:open.feishu.cn)"
     ]
   }
 }

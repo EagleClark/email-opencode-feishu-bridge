@@ -8,6 +8,7 @@ export interface EmailConfig {
   senderMatchType: 'exact' | 'domain';
   openCodeHost?: string;
   openCodePort?: number;
+  feishuWebhookUrl?: string;
 }
 
 export interface StoredEmail {
