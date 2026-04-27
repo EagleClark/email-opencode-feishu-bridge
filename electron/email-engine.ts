@@ -31,11 +31,15 @@ export class EmailEngine {
     this.ackedUids = new Set(configStore.loadAcks());
     this.processedInSession = new Set();
 
-    this.client = new ImapFlow({
-      host: config.imapHost,
-      port: config.imapPort,
-      auth: { user: config.username, pass: config.password },
-      secure: config.useTls,
+    this.client = this.createClient();
+  }
+
+  private createClient(): ImapFlow {
+    return new ImapFlow({
+      host: this.config.imapHost,
+      port: this.config.imapPort,
+      auth: { user: this.config.username, pass: this.config.password },
+      secure: this.config.useTls,
       logger: false,
     });
   }
@@ -96,6 +100,7 @@ export class EmailEngine {
         if (this.running) {
           await this.sleep(this.backoffDelay);
           this.backoffDelay = Math.min(this.backoffDelay * 2, 30000);
+          this.client = this.createClient();
         }
       }
     }
