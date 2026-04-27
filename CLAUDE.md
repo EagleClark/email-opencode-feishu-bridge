@@ -94,6 +94,20 @@ Two sets prevent duplicate processing:
 - `ackedUids` (persisted to disk) — UI display only, marks "已处理"
 - `processing` boolean — prevents concurrent handleNewEmails() from IDLE + poll
 
+### ImapFlow Reconnection (email-engine.ts)
+
+`ImapFlow` instances cannot be reused after disconnection. The engine:
+- Extracts client creation into `createClient()` method
+- After a connection error, backoff waits then calls `this.client = this.createClient()` to create a fresh instance before the next connect attempt in `monitorLoop()`
+
+### Feishu Rate Limiting (feishu-webhook.ts)
+
+Sliding window rate limiter enforces **1 req/s** and **30 req/min** to comply with Feishu webhook limits:
+- `sendTimestamps[]` tracks recent send times (pruned beyond 60s window)
+- When `canSend()` returns false, messages go into a FIFO `queue[]`
+- `processQueue()` drains the queue as slots become available, with 100ms polling
+- Network failures are automatically re-queued
+
 ## Key Constraints
 
 - **Always use `createHashRouter`** (not `createBrowserRouter`). Electron loads via `file://` protocol which doesn't support HTML5 History API path routing.
